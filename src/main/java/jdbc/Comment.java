@@ -3,55 +3,48 @@ package jdbc;
 import java.time.LocalDateTime;
 
 public class Comment {
-	private long id;
-	private long idpost;
-	private Long idcmt;
+
+	private long idCmt;
+	private long idPost;
 	private String nameuser;
 	private String content;
 	private LocalDateTime timeline;
-	private long evaluate;
+	private long evaluate = 5;
+	private Long idCmtParent = null;
 	
-	
-	public Comment(long idpost, Long idcmt, String nameuser, String content, LocalDateTime timeline, long evaluate) {
-		super();
-		this.idpost = idpost;
-		this.idcmt = idcmt;
-		this.nameuser = nameuser;
-		this.content = content;
-		this.timeline = timeline;
-		this.evaluate = evaluate;
-	}
-	public Comment(long id, long idpost, Long idcmt, String nameuser, String content, LocalDateTime timeline,
-			long evaluate) {
-		super();
-		this.id = id;
-		this.idpost = idpost;
-		this.idcmt = idcmt;
-		this.nameuser = nameuser;
-		this.content = content;
-		this.timeline = timeline;
-		this.evaluate = evaluate;
-	}
 	public Comment() {
+        super();
+    }
+    public Comment(long idPost, String nameuser, String content, LocalDateTime timeline, long evaluate) {
 		super();
+		this.idPost = idPost;
+		this.nameuser = nameuser;
+		this.content = content;
+		this.timeline = timeline;
+		this.evaluate = evaluate;
 	}
-	public long getId() {
-		return id;
+	public Comment(long idPost, String nameuser, String content, LocalDateTime timeline,
+			long evaluate, Long idCmtParent) {
+		super();
+		this.idPost = idPost;
+		this.nameuser = nameuser;
+		this.content = content;
+		this.timeline = timeline;
+		this.evaluate = evaluate;
+		this.idCmtParent = idCmtParent;
 	}
-	public void setId(long id) {
-		this.id = id;
+
+	public long getIdCmt() {
+		return idCmt;
 	}
-	public long getIdpost() {
-		return idpost;
+	public void setidCmt(long idCmt) {
+		this.idCmt = idCmt;
 	}
-	public void setIdpost(long idpost) {
-		this.idpost = idpost;
+	public long getIdPost() {
+		return idPost;
 	}
-	public Long getIdcmt() {
-		return idcmt;
-	}
-	public void setIdcmt(Long idcmt) {
-		this.idcmt = idcmt;
+	public void setIdPost(long idPost) {
+		this.idPost = idPost;
 	}
 	public String getNameuser() {
 		return nameuser;
@@ -77,10 +70,18 @@ public class Comment {
 	public void setEvaluate(long evaluate) {
 		this.evaluate = evaluate;
 	}
-	@Override
-	public String toString() {
-		return "Comment [id=" + id + ", idpost=" + idpost + ", idcmt=" + idcmt + ", nameuser=" + nameuser + ", content="
-				+ content + ", timeline=" + timeline + ", evaluate=" + evaluate + "]";
-	}
 	
+	public Long getIdCmtParent() {
+        return idCmtParent;
+    }
+    public void setIdCmtParent(Long idCmtParent) {
+        this.idCmtParent = idCmtParent;
+    }
+    @Override
+    public String toString() {
+        return "Comment [idCmt=" + idCmt + ", idPost=" + idPost + ", nameuser=" + nameuser + ", content="
+                + content + ", timeline=" + timeline + ", evaluate=" + evaluate + ", idCmtParent=" + idCmtParent
+                + "]";
+    }
+
 }

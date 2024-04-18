@@ -3,95 +3,101 @@ package jdbc;
 import java.time.LocalDateTime;
 
 public class Post {
-	private long id;
-	private String title;
-	private String content;
-	private String username;
-	private LocalDateTime timeline;
-	private String status;
-	
-	public Post() {
-		
-	}
-	
 
-	public String getStatus() {
-		return status;
-	}
+    private long idPost;
+    private String title;
+    private String content;
+    private LocalDateTime timeline;
+    private String status;
+    private String imageUrl;
+    private long idAccount;
 
+    public Post() {
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public Post(long idPost, String title, String content, LocalDateTime timeline, String status,
+            String imageUrl, long idAccount) {
+        super();
+        this.idPost = idPost;
+        this.title = title;
+        this.content = content;
+        this.timeline = timeline;
+        this.status = status;
+        this.imageUrl = imageUrl;
+        this.idAccount = idAccount;
+    }
 
+    public Post(String title, String content, LocalDateTime timeline, String status, String imageUrl,
+            long idAccount) {
+        super();
+        this.title = title;
+        this.content = content;
+        this.timeline = timeline;
+        this.status = status;
+        this.imageUrl = imageUrl;
+        this.idAccount = idAccount;
+    }
 
-	public Post(long id, String title, String content, String username, LocalDateTime timeline,String status) {
-		super();
-		this.id = id;
-		this.title = title;
-		this.content = content;
-		this.username = username;
-		this.timeline = timeline;
-		this.status = status;
-	}
+    public long getIdPost() {
+        return idPost;
+    }
 
-	public Post(String title, String content, String username, LocalDateTime timeline,String status) {
-		super();
-		this.title = title;
-		this.content = content;
-		this.username = username;
-		this.timeline = timeline;
-		this.status = status;
-	}
+    public void setIdPost(long idPost) {
+        this.idPost = idPost;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public String gettitle() {
-		return title;
-	}
+    public String getContent() {
+        return content;
+    }
 
-	public void settitle(String title) {
-		this.title = title;
-	}
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-	public String getContent() {
-		return content;
-	}
+    public LocalDateTime getTimeline() {
+        return timeline;
+    }
 
-	public void setContent(String content) {
-		this.content = content;
-	}
+    public void setTimeline(LocalDateTime timeline) {
+        this.timeline = timeline;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public LocalDateTime getTimeline() {
-		return timeline;
-	}
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
-	public void setTimeline(LocalDateTime timeline) {
-		this.timeline = timeline;
-	}
-	
-	@Override
-		public String toString() {
-			return "Post [id=" + id + ", title=" + title + ", content=" + content + ", username=" + username + ",timeline=" + timeline + "]";
-	}
-	
-	
-	
-	
-	
-	
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public long getIdAccount() {
+        return idAccount;
+    }
+
+    public void setIdAccount(long idAccount) {
+        this.idAccount = idAccount;
+    }
+
+    @Override
+    public String toString() {
+        return "Post [idPost=" + idPost + ", title=" + title + ", content=" + content + ", timeline="
+                + timeline + ", status=" + status + ", imageUrl=" + imageUrl + ", idAccount=" + idAccount + "]";
+    }
+
 }
