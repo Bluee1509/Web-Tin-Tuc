@@ -14,7 +14,7 @@ public interface NewsRepository {
 
     List<Post> findAll();
 
-    int save(Post a);
+    Post save(Post post);
 
     int savecmt(Comment b);
 
@@ -24,4 +24,9 @@ public interface NewsRepository {
 
     int updatePostStatus(String status, Long id);
 
+    int saveImageUrls(Image image);
+
+    List<String> getImageUrlsByIdPost(Long idPost);
+
+    int deleteImageByIdPostAndImageUrl(Long idPost, String imageUrl);
 }

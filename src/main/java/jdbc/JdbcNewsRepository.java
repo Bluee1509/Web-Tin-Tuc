@@ -1,11 +1,16 @@
 package jdbc;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -38,19 +43,34 @@ public class JdbcNewsRepository implements NewsRepository {
     }
 
     @Override
-    public int save(Post post) {
-        return jdbcTemplate.update(
-                "INSERT INTO post (title,content,timeline,status,id_account,image_url) VALUES(?,?,?,?,?,?)",
-                new Object[] { post.getTitle(), post.getContent(), post.getTimeline(), post.getStatus(),
-                        post.getIdAccount(), post.getImageUrl() });
+    public Post save(Post post) {
+        String sql = "INSERT INTO post (title, content, timeline, status, id_account, thumbnail_url) VALUES(?,?,?,?,?,?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, post.getTitle());
+            ps.setString(2, post.getContent());
+            ps.setTimestamp(3, Timestamp.valueOf(post.getTimeline()));
+            ps.setString(4, post.getStatus());
+            ps.setLong(5, post.getIdAccount());
+            ps.setString(6, post.getThumbnailUrl());
+            return ps;
+        }, keyHolder);
+
+        // Retrieve the generated ID (if needed)
+        Number generatedId = keyHolder.getKey();
+        
+        // Set the generated ID to the model (if needed)
+        post.setIdPost(generatedId.longValue());
+        return post;
     }
 
     @Override
     public int updatePost(Post post) {
         return jdbcTemplate.update(
-                "UPDATE post SET title=?, content=?, timeline=?,status=?, image_url=? WHERE id_post=?",
+                "UPDATE post SET title=?, content=?, timeline=?,status=?, thumbnail_url=? WHERE id_post=?",
                 new Object[] { post.getTitle(), post.getContent(), java.time.LocalDateTime.now(), post.getStatus(),
-                        post.getImageUrl(), post.getIdPost() });
+                        post.getThumbnailUrl(), post.getIdPost() });
     }
 
     @Override
@@ -85,6 +105,27 @@ public class JdbcNewsRepository implements NewsRepository {
     @Override
     public int updatePostStatus(String status, Long id) {
         return jdbcTemplate.update("UPDATE post SET status = ? WHERE id_post = ?", new Object[] { status, id });
+    }
+
+    @Override
+    public int saveImageUrls(Image image) {
+        return jdbcTemplate.update("INSERT INTO image (id_post, image_url) VALUES (?,?)",
+                new Object[] { image.getIdPost(), image.getImageUrl() });
+    }
+
+    @Override
+    public List<String> getImageUrlsByIdPost(Long idPost) {
+        try {
+            String sql = "SELECT image_url FROM image WHERE id_post='" + idPost + "'";
+            return jdbcTemplate.queryForList(sql, String.class);
+        } catch (IncorrectResultSizeDataAccessException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public int deleteImageByIdPostAndImageUrl(Long idPost, String imageUrl) {
+        return jdbcTemplate.update("DELETE FROM image WHERE id_post=? and image_url=?", idPost, imageUrl);
     }
 
 }

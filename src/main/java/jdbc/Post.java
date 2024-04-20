@@ -1,6 +1,7 @@
 package jdbc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Post {
 
@@ -9,30 +10,32 @@ public class Post {
     private String content;
     private LocalDateTime timeline;
     private String status;
-    private String imageUrl;
+    private String thumbnailUrl;
     private long idAccount;
+    private List<String> imageUrls;
 
     public Post() {
     }
 
-    public Post(long idPost, String title, String content, LocalDateTime timeline, String status, String imageUrl, long idAccount) {
+    public Post(long idPost, String title, String content, LocalDateTime timeline, String status, String thumbnailUrl,
+            long idAccount) {
         super();
         this.idPost = idPost;
         this.title = title;
         this.content = content;
         this.timeline = timeline;
         this.status = status;
-        this.imageUrl = imageUrl;
+        this.thumbnailUrl = thumbnailUrl;
         this.idAccount = idAccount;
     }
 
-    public Post(String title, String content, LocalDateTime timeline, String status, String imageUrl, long idAccount) {
+    public Post(String title, String content, LocalDateTime timeline, String status, String thumbnailUrl, long idAccount) {
         super();
         this.title = title;
         this.content = content;
         this.timeline = timeline;
         this.status = status;
-        this.imageUrl = imageUrl;
+        this.thumbnailUrl = thumbnailUrl;
         this.idAccount = idAccount;
     }
 
@@ -76,12 +79,16 @@ public class Post {
         this.status = status;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     public long getIdAccount() {
@@ -92,10 +99,15 @@ public class Post {
         this.idAccount = idAccount;
     }
 
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
     @Override
     public String toString() {
         return "Post [idPost=" + idPost + ", title=" + title + ", content=" + content + ", timeline=" + timeline
-                + ", status=" + status + ", imageUrl=" + imageUrl + ", idAccount=" + idAccount + "]";
+                + ", status=" + status + ", thumbnailUrl=" + thumbnailUrl + ", idAccount=" + idAccount + ", imageUrls="
+                + imageUrls + "]";
     }
 
 }

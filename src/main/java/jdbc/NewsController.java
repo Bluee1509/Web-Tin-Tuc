@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,10 +36,12 @@ public class NewsController {
 
     @Autowired
     NewsRepository newsRepository;
+    @Autowired
+    NewsServices newsServices;
 
     @GetMapping("/post/{id}")
     public ResponseEntity<Post> getNewsById(@PathVariable("id") long id) {
-        Post post = newsRepository.findById(id);
+        Post post = newsServices.getPost(id);
         if (post != null) {
             return new ResponseEntity<>(post, HttpStatus.OK);
         } else {
@@ -69,16 +72,19 @@ public class NewsController {
     @GetMapping("/post")
     public ResponseEntity<List<Post>> getTitle(@RequestParam(required = false) String title) {
         try {
-            List<Post> post = new ArrayList<Post>();
+            List<Post> posts = new ArrayList<Post>();
             if (title == null) {
-                newsRepository.findAll().forEach(post::add);
+                newsRepository.findAll().forEach(posts::add);
             } else {
-                newsRepository.findByTitleContaining(title).forEach(post::add);
+                newsRepository.findByTitleContaining(title).forEach(posts::add);
             }
-            if (post.isEmpty()) {
+            if (posts.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
-                return new ResponseEntity<>(post, HttpStatus.OK);
+                for (Post post : posts) {
+                    post.setImageUrls(newsServices.getImageUrlsByIdPost(post.getIdPost()));
+                }
+                return new ResponseEntity<>(posts, HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -88,30 +94,20 @@ public class NewsController {
     // post bai
     @PostMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
             MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> createPost(@RequestPart Post post, @RequestPart MultipartFile file) {
-        String imageUrl = null;
-        try {
-            String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-            String uploadDir = "src/main/resources/static/images/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            try (InputStream inputStream = file.getInputStream()) {
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                imageUrl = "/images/" + fileName; // URL để truy cập hình ảnh từ frontend
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload image");
+    public ResponseEntity<String> createPost(@RequestPart Post post, @RequestPart MultipartFile thumbnail,
+            @RequestPart MultipartFile[] images) {
+        String thumbnailUrl = newsServices.uploadImage(thumbnail);
+        List<String> imagesUrls = new ArrayList<String>();
+        for (MultipartFile image : images) {
+            imagesUrls.add(newsServices.uploadImage(image));
         }
-        if (imageUrl != null) {
-            newsRepository.save(new Post(post.getTitle(), post.getContent(), java.time.LocalDateTime.now(), "pending",
-                    imageUrl, post.getIdAccount()));
+        Post postInserted = newsRepository.save(new Post(post.getTitle(), post.getContent(),
+                java.time.LocalDateTime.now(), "Pending", thumbnailUrl, post.getIdAccount()));
+        post.setIdPost(postInserted.getIdPost());
+        for (String imageUrl : imagesUrls) {
+            newsRepository.saveImageUrls(new Image(post.getIdPost(), imageUrl));
         }
         return new ResponseEntity<>("Post was created successfully.", HttpStatus.CREATED);
-
     }
 
     // duyetbai
@@ -128,44 +124,34 @@ public class NewsController {
 
     // update post
     @PutMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile file) {
-        Post _post = newsRepository.findById(post.getIdPost());
-        String filePath = "src/main/resources/static/" + _post.getImageUrl();
-        File imageFile = new File(filePath);
-        // Check if the file exists
-        if (!imageFile.exists()) {
-            System.out.println("Image file does not exist");
-            return new ResponseEntity<>("Image file does not exist.", HttpStatus.NOT_FOUND);
-        }
-        boolean deleted = imageFile.delete();
-        String imageUrl = null;
-        if (deleted) {
-
-            try {
-                String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-                String uploadDir = "src/main/resources/static/images/";
-                Path uploadPath = Paths.get(uploadDir);
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-                try (InputStream inputStream = file.getInputStream()) {
-                    Path filePath_2 = uploadPath.resolve(fileName);
-                    Files.copy(inputStream, filePath_2, StandardCopyOption.REPLACE_EXISTING);
-                    imageUrl = "/images/" + fileName; // URL để truy cập hình ảnh từ frontend
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload image");
+    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile thumbnail, @RequestPart MultipartFile[] images) {
+        Post oldPost = newsServices.getPost(post.getIdPost());
+        if (oldPost != null) {
+            String oldThumbnailUrl = oldPost.getThumbnailUrl();
+            List<String> oldImageUrls = oldPost.getImageUrls();
+            boolean isDeletedImage = false;
+            isDeletedImage = newsServices.deleteImage(oldThumbnailUrl);
+            for (String imageUrl : oldImageUrls) {
+                isDeletedImage = newsServices.deleteImage(imageUrl);
+                newsRepository.deleteImageByIdPostAndImageUrl(post.getIdPost(), imageUrl);
             }
-        }
-        if (_post != null) {
-            _post.setTitle(post.getTitle());
-            _post.setContent(post.getContent());
-            _post.setTimeline(post.getTimeline());
-            _post.setStatus(post.getStatus());
-            _post.setIdAccount(post.getIdAccount());
-            _post.setImageUrl(imageUrl);
-            newsRepository.updatePost(_post);
+            if (isDeletedImage) {
+                String newThumbnailUrl = newsServices.uploadImage(thumbnail);
+                List<String> newImagesUrls = new ArrayList<String>();
+                for (MultipartFile image : images) {
+                    newImagesUrls.add(newsServices.uploadImage(image));
+                }
+                for (String imageUrl : newImagesUrls) {
+                    newsRepository.saveImageUrls(new Image(post.getIdAccount(), imageUrl));
+                }
+                oldPost.setTitle(post.getTitle());
+                oldPost.setContent(post.getContent());
+                oldPost.setTimeline(post.getTimeline());
+                oldPost.setStatus(post.getStatus());
+                oldPost.setIdAccount(post.getIdAccount());
+                oldPost.setThumbnailUrl(newThumbnailUrl);
+                newsRepository.updatePost(oldPost);
+            }
             return new ResponseEntity<>("News was updated successfully.", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Cannot find News with id=" + post.getIdPost(), HttpStatus.NOT_FOUND);
