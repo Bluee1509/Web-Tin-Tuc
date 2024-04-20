@@ -188,7 +188,7 @@ public class NewsController {
     @PostMapping("/comment")
     public ResponseEntity<String> createComment(@RequestBody Comment comment) {
         newsRepository.savecmt(new Comment(comment.getIdPost(), comment.getNameuser(), comment.getContent(),
-                java.time.LocalDateTime.now(), comment.getEvaluate(), comment.getIdCmtParent()));
+                java.time.LocalDateTime.now(), comment.getIdCmtParent()));
         return new ResponseEntity<>("Comment was created successfully.", HttpStatus.CREATED);
     }
 

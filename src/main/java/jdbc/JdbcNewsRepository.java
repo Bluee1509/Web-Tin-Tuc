@@ -81,9 +81,9 @@ public class JdbcNewsRepository implements NewsRepository {
     @Override
     public int savecmt(Comment comment) {
         return jdbcTemplate.update(
-                "INSERT INTO comment (id_post,nameuser,content,timeline,evaluate,id_cmt_parent) VALUES(?,?,?,?,?,?)",
+                "INSERT INTO comment (id_post,nameuser,content,timeline,id_cmt_parent) VALUES(?,?,?,?,?)",
                 new Object[] { comment.getIdPost(), comment.getNameuser(), comment.getContent(), comment.getTimeline(),
-                        comment.getEvaluate(), comment.getIdCmtParent() });
+                         comment.getIdCmtParent() });
     }
 
     @Override
