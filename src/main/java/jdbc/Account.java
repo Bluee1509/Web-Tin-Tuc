@@ -3,17 +3,17 @@ package jdbc;
 public class Account {
 
     private long idAccount;
-	private String name;
-	private String username;
-	private String password;
-	private String role;
+    private String name;
+    private String username;
+    private String password;
+    private String role;
     private String accessRight;
 
-	public Account() {
-		super();
-	}
+    public Account() {
+        super();
+    }
 
-	public Account(long idAccount, String name, String username, String password, String role, String accessRight) {
+    public Account(long idAccount, String name, String username, String password, String role, String accessRight) {
         super();
         this.idAccount = idAccount;
         this.name = name;
@@ -32,39 +32,38 @@ public class Account {
     }
 
     public String getRole() {
-		return role;
-	}
+        return role;
+    }
 
-	public void setRole(String role) {
-		this.role = role;
-	}
-	
-	public String getName() {
-		return name;
-	}
+    public void setRole(String role) {
+        this.role = role;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public String getAccessRight() {
+    public String getAccessRight() {
         return accessRight;
     }
 

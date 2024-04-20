@@ -18,7 +18,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,27 +32,28 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api")
 public class NewsController {
+
     @Autowired
     NewsRepository newsRepository;
+
     @GetMapping("/post/{id}")
     public ResponseEntity<Post> getNewsById(@PathVariable("id") long id) {
         Post post = newsRepository.findById(id);
-
         if (post != null) {
             return new ResponseEntity<>(post, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    //dang nhap
-    @PostMapping("/login")
-   public ResponseEntity<Account> login(@RequestParam String username,@RequestParam String password) {
 
-        List<Account> result= new ArrayList<>();
+    // dang nhap
+    @PostMapping("/login")
+    public ResponseEntity<Account> login(@RequestParam String username, @RequestParam String password) {
+        List<Account> result = new ArrayList<>();
         result.addAll(newsRepository.checklogin(username, password));
-        if(result.isEmpty()) {
+        if (result.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }else {
+        } else {
             Account account = new Account();
             account.setIdAccount(result.get(0).getIdAccount());
             account.setName(result.get(0).getName());
@@ -61,26 +61,23 @@ public class NewsController {
             account.setRole(result.get(0).getRole());
             account.setUsername(result.get(0).getUsername());
             account.setAccessRight(result.get(0).getAccessRight());
-            return new ResponseEntity<>(account,HttpStatus.OK);
+            return new ResponseEntity<>(account, HttpStatus.OK);
         }
     }
+
     // tim kiem theo title
     @GetMapping("/post")
     public ResponseEntity<List<Post>> getTitle(@RequestParam(required = false) String title) {
         try {
             List<Post> post = new ArrayList<Post>();
-
             if (title == null) {
                 newsRepository.findAll().forEach(post::add);
-//	    	  List<Tutorial> a = tutorialRepository.findAll();
-//	    	  a.forEach(tutorials::add);
-
             } else {
                 newsRepository.findByTitleContaining(title).forEach(post::add);
             }
             if (post.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }else {
+            } else {
                 return new ResponseEntity<>(post, HttpStatus.OK);
             }
         } catch (Exception e) {
@@ -89,7 +86,8 @@ public class NewsController {
     }
 
     // post bai
-    @PostMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
+            MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<String> createPost(@RequestPart Post post, @RequestPart MultipartFile file) {
         String imageUrl = null;
         try {
@@ -116,26 +114,25 @@ public class NewsController {
 
     }
 
-    //duyetbai
+    // duyetbai
     @PutMapping("/post/{id}/approve")
-    public ResponseEntity<String> approvePost(@PathVariable("id")long id, @RequestParam String status){
+    public ResponseEntity<String> approvePost(@PathVariable("id") long id, @RequestParam String status) {
         Post post = newsRepository.findById(id);
-        if(post !=null) {
+        if (post != null) {
             post.setStatus(status);
             newsRepository.updatePost(post);
             return new ResponseEntity<>("Post da duoc duyet", HttpStatus.OK);
-        }else return new ResponseEntity<>("Cannot find News with id=" + id, HttpStatus.NOT_FOUND);
+        } else
+            return new ResponseEntity<>("Cannot find News with id=" + id, HttpStatus.NOT_FOUND);
     }
-    //update post
+
+    // update post
     @PutMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile file){
+    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile file) {
         Post _post = newsRepository.findById(post.getIdPost());
-        // Construct the file path of the image in the resources directory
         String filePath = "src/main/resources/static/" + _post.getImageUrl();
         File imageFile = new File(filePath);
-
         // Check if the file exists
-   
         if (!imageFile.exists()) {
             System.out.println("Image file does not exist");
             return new ResponseEntity<>("Image file does not exist.", HttpStatus.NOT_FOUND);
@@ -143,7 +140,7 @@ public class NewsController {
         boolean deleted = imageFile.delete();
         String imageUrl = null;
         if (deleted) {
-            
+
             try {
                 String fileName = StringUtils.cleanPath(file.getOriginalFilename());
                 String uploadDir = "src/main/resources/static/images/";
@@ -161,7 +158,7 @@ public class NewsController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload image");
             }
         }
-        if(_post != null) {
+        if (_post != null) {
             _post.setTitle(post.getTitle());
             _post.setContent(post.getContent());
             _post.setTimeline(post.getTimeline());
@@ -170,40 +167,42 @@ public class NewsController {
             _post.setImageUrl(imageUrl);
             newsRepository.updatePost(_post);
             return new ResponseEntity<>("News was updated successfully.", HttpStatus.OK);
-        }else {
+        } else {
             return new ResponseEntity<>("Cannot find News with id=" + post.getIdPost(), HttpStatus.NOT_FOUND);
         }
     }
-    //delete post
+
+    // delete post
     @DeleteMapping(value = "/post/{id}")
-    public ResponseEntity<String> deletePost(@PathVariable("id") long id){
+    public ResponseEntity<String> deletePost(@PathVariable("id") long id) {
         try {
-            Post _post = newsRepository.findById(id);
             String status = "Deleted";
             int result = newsRepository.updatePostStatus(status, id);
-            if(result == 0) {
+            if (result == 0) {
                 return new ResponseEntity<>("Cannot find Post with id=" + id, HttpStatus.OK);
             }
             return new ResponseEntity<>("Post was deleted successfully.", HttpStatus.OK);
-        }catch(Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>("Cannot delete Post.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    //show cmt cua 1 post theo idpost
+
+    // show cmt cua 1 post theo idpost
     @GetMapping("/comment/{idpost}")
-    public ResponseEntity<List<Comment>> showComment(@PathVariable("idpost") long idpost){
+    public ResponseEntity<List<Comment>> showComment(@PathVariable("idpost") long idpost) {
         List<Comment> comment = newsRepository.findByIdpost(idpost);
-        if( comment != null) {
+        if (comment != null) {
             return new ResponseEntity<>(comment, HttpStatus.OK);
-        }else {
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    //create cmt
-    @PostMapping("/comment")
-    public ResponseEntity<String> createComment(@RequestBody Comment comment){
 
-        newsRepository.savecmt(new Comment(comment.getIdPost(),comment.getNameuser(),comment.getContent(),java.time.LocalDateTime.now(),comment.getEvaluate(), comment.getIdCmtParent()));
+    // create cmt
+    @PostMapping("/comment")
+    public ResponseEntity<String> createComment(@RequestBody Comment comment) {
+        newsRepository.savecmt(new Comment(comment.getIdPost(), comment.getNameuser(), comment.getContent(),
+                java.time.LocalDateTime.now(), comment.getEvaluate(), comment.getIdCmtParent()));
         return new ResponseEntity<>("Comment was created successfully.", HttpStatus.CREATED);
     }
 

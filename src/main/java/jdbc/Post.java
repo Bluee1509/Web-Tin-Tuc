@@ -15,8 +15,7 @@ public class Post {
     public Post() {
     }
 
-    public Post(long idPost, String title, String content, LocalDateTime timeline, String status,
-            String imageUrl, long idAccount) {
+    public Post(long idPost, String title, String content, LocalDateTime timeline, String status, String imageUrl, long idAccount) {
         super();
         this.idPost = idPost;
         this.title = title;
@@ -27,8 +26,7 @@ public class Post {
         this.idAccount = idAccount;
     }
 
-    public Post(String title, String content, LocalDateTime timeline, String status, String imageUrl,
-            long idAccount) {
+    public Post(String title, String content, LocalDateTime timeline, String status, String imageUrl, long idAccount) {
         super();
         this.title = title;
         this.content = content;
@@ -96,8 +94,8 @@ public class Post {
 
     @Override
     public String toString() {
-        return "Post [idPost=" + idPost + ", title=" + title + ", content=" + content + ", timeline="
-                + timeline + ", status=" + status + ", imageUrl=" + imageUrl + ", idAccount=" + idAccount + "]";
+        return "Post [idPost=" + idPost + ", title=" + title + ", content=" + content + ", timeline=" + timeline
+                + ", status=" + status + ", imageUrl=" + imageUrl + ", idAccount=" + idAccount + "]";
     }
 
 }
