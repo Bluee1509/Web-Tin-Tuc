@@ -10,9 +10,9 @@ public interface NewsRepository {
 
     Post findById(Long id);
 
-    List<Post> findByTitleContaining(String title);
+    List<Post> findByTitleContaining(String title, int pageNumber, int pageSize);
 
-    List<Post> findAll();
+    List<Post> findAll(int pageNumber, int pageSize);
 
     Post save(Post post);
 

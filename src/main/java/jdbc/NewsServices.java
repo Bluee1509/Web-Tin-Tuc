@@ -43,10 +43,7 @@ public class NewsServices {
     }
 
     public Post getPost(Long id) {
-        Post post = newsRepository.findById(id);
-        List<String> imageUrls = newsRepository.getImageUrlsByIdPost(id);
-        post.setImageUrls(imageUrls);
-        return post;
+        return newsRepository.findById(id);
     }
 
     public List<String> getImageUrlsByIdPost(Long idPost){

@@ -31,15 +31,17 @@ public class JdbcNewsRepository implements NewsRepository {
     }
 
     @Override
-    public List<Post> findByTitleContaining(String title) {
-        String q = "SELECT * from post WHERE title LIKE '%" + title + "%' and status not in ('Deleted')";
-        return jdbcTemplate.query(q, BeanPropertyRowMapper.newInstance(Post.class));
+    public List<Post> findByTitleContaining(String title, int pageNumber, int pageSize) {
+        int offset = (pageNumber - 1) * pageSize;
+        String sql = "SELECT * from post WHERE title LIKE '%" + title + "%' and status not in ('Deleted')  LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(sql, new Object[] { pageSize, offset }, BeanPropertyRowMapper.newInstance(Post.class));
     }
 
     @Override
-    public List<Post> findAll() {
-        return jdbcTemplate.query("SELECT * from post where status not in ('Deleted')",
-                BeanPropertyRowMapper.newInstance(Post.class));
+    public List<Post> findAll(int pageNumber, int pageSize) {
+        int offset = (pageNumber - 1) * pageSize;
+        String sql = "SELECT * from post where status not in ('Deleted') LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(sql, new Object[] { pageSize, offset }, BeanPropertyRowMapper.newInstance(Post.class));
     }
 
     @Override

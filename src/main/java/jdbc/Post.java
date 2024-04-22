@@ -12,7 +12,6 @@ public class Post {
     private String status;
     private String thumbnailUrl;
     private long idAccount;
-    private List<String> imageUrls;
 
     public Post() {
     }
@@ -79,10 +78,6 @@ public class Post {
         this.status = status;
     }
 
-    public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
-    }
-
     public String getThumbnailUrl() {
         return thumbnailUrl;
     }
@@ -99,15 +94,10 @@ public class Post {
         this.idAccount = idAccount;
     }
 
-    public List<String> getImageUrls() {
-        return imageUrls;
-    }
-
     @Override
     public String toString() {
         return "Post [idPost=" + idPost + ", title=" + title + ", content=" + content + ", timeline=" + timeline
-                + ", status=" + status + ", thumbnailUrl=" + thumbnailUrl + ", idAccount=" + idAccount + ", imageUrls="
-                + imageUrls + "]";
+                + ", status=" + status + ", thumbnailUrl=" + thumbnailUrl + ", idAccount=" + idAccount + "]";
     }
 
 }

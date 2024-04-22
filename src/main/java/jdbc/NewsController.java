@@ -1,12 +1,5 @@
 package jdbc;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,20 +61,18 @@ public class NewsController {
 
     // tim kiem theo title
     @GetMapping("/post")
-    public ResponseEntity<List<Post>> getTitle(@RequestParam(required = false) String title) {
+    public ResponseEntity<List<Post>> getTitle(@RequestParam(required = false) String title,
+            @RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
         try {
             List<Post> posts = new ArrayList<Post>();
             if (title == null) {
-                newsRepository.findAll().forEach(posts::add);
+                newsRepository.findAll(pageNumber, pageSize).forEach(posts::add);
             } else {
-                newsRepository.findByTitleContaining(title).forEach(posts::add);
+                newsRepository.findByTitleContaining(title, pageNumber, pageSize).forEach(posts::add);
             }
             if (posts.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
-                for (Post post : posts) {
-                    post.setImageUrls(newsServices.getImageUrlsByIdPost(post.getIdPost()));
-                }
                 return new ResponseEntity<>(posts, HttpStatus.OK);
             }
         } catch (Exception e) {
@@ -94,19 +83,11 @@ public class NewsController {
     // post bai
     @PostMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
             MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> createPost(@RequestPart Post post, @RequestPart MultipartFile thumbnail,
-            @RequestPart MultipartFile[] images) {
+    public ResponseEntity<String> createPost(@RequestPart Post post, @RequestPart MultipartFile thumbnail) {
         String thumbnailUrl = newsServices.uploadImage(thumbnail);
-        List<String> imagesUrls = new ArrayList<String>();
-        for (MultipartFile image : images) {
-            imagesUrls.add(newsServices.uploadImage(image));
-        }
         Post postInserted = newsRepository.save(new Post(post.getTitle(), post.getContent(),
                 java.time.LocalDateTime.now(), "Pending", thumbnailUrl, post.getIdAccount()));
         post.setIdPost(postInserted.getIdPost());
-        for (String imageUrl : imagesUrls) {
-            newsRepository.saveImageUrls(new Image(post.getIdPost(), imageUrl));
-        }
         return new ResponseEntity<>("Post was created successfully.", HttpStatus.CREATED);
     }
 
@@ -124,26 +105,13 @@ public class NewsController {
 
     // update post
     @PutMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile thumbnail, @RequestPart MultipartFile[] images) {
+    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile thumbnail) {
         Post oldPost = newsServices.getPost(post.getIdPost());
         if (oldPost != null) {
             String oldThumbnailUrl = oldPost.getThumbnailUrl();
-            List<String> oldImageUrls = oldPost.getImageUrls();
-            boolean isDeletedImage = false;
-            isDeletedImage = newsServices.deleteImage(oldThumbnailUrl);
-            for (String imageUrl : oldImageUrls) {
-                isDeletedImage = newsServices.deleteImage(imageUrl);
-                newsRepository.deleteImageByIdPostAndImageUrl(post.getIdPost(), imageUrl);
-            }
+            boolean isDeletedImage = newsServices.deleteImage(oldThumbnailUrl);
             if (isDeletedImage) {
                 String newThumbnailUrl = newsServices.uploadImage(thumbnail);
-                List<String> newImagesUrls = new ArrayList<String>();
-                for (MultipartFile image : images) {
-                    newImagesUrls.add(newsServices.uploadImage(image));
-                }
-                for (String imageUrl : newImagesUrls) {
-                    newsRepository.saveImageUrls(new Image(post.getIdAccount(), imageUrl));
-                }
                 oldPost.setTitle(post.getTitle());
                 oldPost.setContent(post.getContent());
                 oldPost.setTimeline(post.getTimeline());
