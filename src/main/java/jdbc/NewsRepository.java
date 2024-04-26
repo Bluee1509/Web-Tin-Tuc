@@ -1,6 +1,7 @@
 package jdbc;
 
 import java.util.List;
+import java.util.Map;
 
 public interface NewsRepository {
 
@@ -29,4 +30,14 @@ public interface NewsRepository {
     List<String> getImageUrlsByIdPost(Long idPost);
 
     int deleteImageByIdPostAndImageUrl(Long idPost, String imageUrl);
+    
+    Map<String, Integer> numberOfPostBaseOnStatus();
+
+    List<Post> findByStatus(String status, int pageNumber, int pageSize);
+
+    int countPostbyStatus(String status);
+
+    int countAll();
+    
+    int countPostbyTitle(String title);
 }
