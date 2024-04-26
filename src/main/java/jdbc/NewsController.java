@@ -2,6 +2,7 @@ package jdbc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,19 +62,47 @@ public class NewsController {
 
     // tim kiem theo title
     @GetMapping("/post")
-    public ResponseEntity<List<Post>> getTitle(@RequestParam(required = false) String title,
-            @RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
+    public ResponseEntity<PagePost> getTitle(@RequestParam(required = false) String title,
+            @RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "6") int pageSize) {
         try {
+            PagePost pagePost = new PagePost();
             List<Post> posts = new ArrayList<Post>();
             if (title == null) {
                 newsRepository.findAll(pageNumber, pageSize).forEach(posts::add);
+                pagePost.setTotal(newsRepository.countAll());
             } else {
                 newsRepository.findByTitleContaining(title, pageNumber, pageSize).forEach(posts::add);
+                pagePost.setTotal(newsRepository.countPostbyTitle(title));
             }
             if (posts.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
-                return new ResponseEntity<>(posts, HttpStatus.OK);
+                pagePost.setContent(posts);
+                return new ResponseEntity<>(pagePost, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // tim kiem theo title
+    @GetMapping("/post/getByStatus")
+    public ResponseEntity<PagePost> getByStatus(@RequestParam String status,
+            @RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "6") int pageSize) {
+        try {
+            PagePost pagePost = new PagePost();
+            List<Post> posts = new ArrayList<Post>();
+
+            newsRepository.findByStatus(status, pageNumber, pageSize).forEach(posts::add);
+
+            if (posts.isEmpty()) {
+
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                pagePost.setContent(posts);
+                
+                pagePost.setTotal(newsRepository.countPostbyStatus(status));
+                return new ResponseEntity<>(pagePost, HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -160,4 +189,10 @@ public class NewsController {
         return new ResponseEntity<>("Comment was created successfully.", HttpStatus.CREATED);
     }
 
+    // get number of post base on status
+    @GetMapping("/post/numberOfPost")
+    public ResponseEntity<Map<String, Integer>> getNumberOfPost() {
+        Map<String, Integer> map = newsRepository.numberOfPostBaseOnStatus();
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
 }

@@ -3,12 +3,22 @@ package jdbc;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -33,14 +43,14 @@ public class JdbcNewsRepository implements NewsRepository {
     @Override
     public List<Post> findByTitleContaining(String title, int pageNumber, int pageSize) {
         int offset = (pageNumber - 1) * pageSize;
-        String sql = "SELECT * from post WHERE title LIKE '%" + title + "%' and status not in ('Deleted')  LIMIT ? OFFSET ?";
+        String sql = "SELECT * from post WHERE title LIKE '%" + title + "%' and status not in ('Deleted')  ORDER BY timeline DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.query(sql, new Object[] { pageSize, offset }, BeanPropertyRowMapper.newInstance(Post.class));
     }
 
     @Override
     public List<Post> findAll(int pageNumber, int pageSize) {
         int offset = (pageNumber - 1) * pageSize;
-        String sql = "SELECT * from post where status not in ('Deleted') LIMIT ? OFFSET ?";
+        String sql = "SELECT * from post where status not in ('Deleted') ORDER BY timeline DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.query(sql, new Object[] { pageSize, offset }, BeanPropertyRowMapper.newInstance(Post.class));
     }
 
@@ -128,6 +138,53 @@ public class JdbcNewsRepository implements NewsRepository {
     @Override
     public int deleteImageByIdPostAndImageUrl(Long idPost, String imageUrl) {
         return jdbcTemplate.update("DELETE FROM image WHERE id_post=? and image_url=?", idPost, imageUrl);
+    }
+
+    @Override
+    public Map<String, Integer> numberOfPostBaseOnStatus() {
+        // SQL query
+        Map<String, Integer> map = new HashMap<>();
+        List<CountPost> countPost = new ArrayList<CountPost>();
+        try {
+            String sql = "SELECT status, COUNT(*) AS numberOfPost FROM post GROUP BY status";
+            countPost.addAll(jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(CountPost.class)));
+        } catch (IncorrectResultSizeDataAccessException e) {
+            return null;
+        }
+        int totalPost = 0;
+        if (!countPost.isEmpty()) {
+            for (CountPost count : countPost) {
+                map.put(count.getStatus(), count.getNumberOfPost());
+                totalPost += count.getNumberOfPost();
+            }
+        }
+        map.put("Total", totalPost);
+        return map;
+    }
+
+    @Override
+    public List<Post> findByStatus(String status, int pageNumber, int pageSize) {
+        int offset = (pageNumber - 1) * pageSize;
+        String sql = "SELECT * from post WHERE status =  '" + status + "' ORDER BY timeline DESC LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(sql, new Object[] { pageSize, offset }, BeanPropertyRowMapper.newInstance(Post.class));
+    }
+
+    @Override
+    public int countPostbyStatus(String status) {
+        String sql = "SELECT COUNT(*) AS numberOfPost FROM post WHERE status = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, status);
+    }
+
+    @Override
+    public int countAll() {
+        String sql = "SELECT COUNT(*) AS numberOfPost FROM post";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    @Override
+    public int countPostbyTitle(String title) {
+        String sql = "SELECT COUNT(*) AS numberOfPost FROM post WHERE title = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, title);
     }
 
 }
