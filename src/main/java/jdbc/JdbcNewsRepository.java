@@ -184,7 +184,7 @@ public class JdbcNewsRepository implements NewsRepository {
     @Override
     public int countPostbyTitle(String title) {
         String sql = "SELECT COUNT(*) AS numberOfPost FROM post WHERE title LIKE '%" + title + "%'";
-        return jdbcTemplate.queryForObject(sql, Integer.class, title);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
 }
