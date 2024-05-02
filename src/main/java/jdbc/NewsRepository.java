@@ -40,4 +40,7 @@ public interface NewsRepository {
     int countAll();
     
     int countPostbyTitle(String title);
+
+	List<Comment> findByIdCmtParent(long id_cmt_parent);
+
 }

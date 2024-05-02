@@ -93,9 +93,9 @@ public class JdbcNewsRepository implements NewsRepository {
     @Override
     public int savecmt(Comment comment) {
         return jdbcTemplate.update(
-                "INSERT INTO comment (id_post,nameuser,content,timeline,evaluate,id_cmt_parent) VALUES(?,?,?,?,?,?)",
-                new Object[] { comment.getIdPost(), comment.getNameuser(), comment.getContent(), comment.getTimeline(),
-                        comment.getEvaluate(), comment.getIdCmtParent() });
+                "INSERT INTO comment (id_post,nameuser,content,timeline,id_cmt_parent) VALUES(?,?,?,?,?)",
+                new Object[] { comment.getIdPost(), comment.getNameuser(), comment.getContent(), comment.getTimeline()
+                		, comment.getIdCmtParent() });
     }
 
     @Override
@@ -109,6 +109,16 @@ public class JdbcNewsRepository implements NewsRepository {
         try {
             String a = "SELECT * FROM comment WHERE id_post='" + idpost + "'";
             return jdbcTemplate.query(a, BeanPropertyRowMapper.newInstance(Comment.class));
+        } catch (IncorrectResultSizeDataAccessException e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public List<Comment> findByIdCmtParent(long id_cmt_parent) {
+        try {
+            String b = "SELECT * FROM comment WHERE id_cmt_parent='" + id_cmt_parent + "'";
+            return jdbcTemplate.query(b, BeanPropertyRowMapper.newInstance(Comment.class));
         } catch (IncorrectResultSizeDataAccessException e) {
             return null;
         }

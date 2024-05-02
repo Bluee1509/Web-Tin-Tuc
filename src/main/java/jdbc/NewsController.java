@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class NewsController {
@@ -85,7 +85,7 @@ public class NewsController {
         }
     }
 
-    // tim kiem theo title
+    // tim kiem theo status
     @GetMapping("/post/getByStatus")
     public ResponseEntity<PagePost> getByStatus(@RequestParam String status,
             @RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "6") int pageSize) {
@@ -133,9 +133,10 @@ public class NewsController {
     }
 
     // update post
-    @PutMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> updateNews(@RequestPart Post post, @RequestPart MultipartFile thumbnail) {
-        Post oldPost = newsServices.getPost(post.getIdPost());
+    @PutMapping(value = "/post/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<String> updateNews(@PathVariable("id") long id,@RequestPart Post post, @RequestPart MultipartFile thumbnail) {
+//        Post oldPost = newsServices.getPost(post.getIdPost());
+    		Post oldPost = newsServices.getPost(id);
         if (oldPost != null) {
             String oldThumbnailUrl = oldPost.getThumbnailUrl();
             boolean isDeletedImage = newsServices.deleteImage(oldThumbnailUrl);
@@ -144,7 +145,7 @@ public class NewsController {
                 oldPost.setTitle(post.getTitle());
                 oldPost.setContent(post.getContent());
                 oldPost.setTimeline(post.getTimeline());
-                oldPost.setStatus(post.getStatus());
+//                oldPost.setStatus(post.getStatus());
                 oldPost.setIdAccount(post.getIdAccount());
                 oldPost.setThumbnailUrl(newThumbnailUrl);
                 newsRepository.updatePost(oldPost);
@@ -180,12 +181,22 @@ public class NewsController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    //show cmt theo id parent
+    @GetMapping("/comment/reply/{idparent}")
+    public ResponseEntity<?> showCommentByParentId(@PathVariable("idparent") long idparent) {
+        List<Comment> comments = newsRepository.findByIdCmtParent(idparent);
+        if (comments == null || comments.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(comments, HttpStatus.OK);
+        }
+    }
 
     // create cmt
     @PostMapping("/comment")
     public ResponseEntity<String> createComment(@RequestBody Comment comment) {
         newsRepository.savecmt(new Comment(comment.getIdPost(), comment.getNameuser(), comment.getContent(),
-                java.time.LocalDateTime.now(), comment.getEvaluate(), comment.getIdCmtParent()));
+                java.time.LocalDateTime.now(), comment.getIdCmtParent()));
         return new ResponseEntity<>("Comment was created successfully.", HttpStatus.CREATED);
     }
 

@@ -9,30 +9,27 @@ public class Comment {
     private String nameuser;
     private String content;
     private LocalDateTime timeline;
-    private long evaluate = 5;
     private Long idCmtParent = null;
 
     public Comment() {
         super();
     }
 
-    public Comment(long idPost, String nameuser, String content, LocalDateTime timeline, long evaluate) {
+    public Comment(long idPost, String nameuser, String content, LocalDateTime timeline ) {
         super();
         this.idPost = idPost;
         this.nameuser = nameuser;
         this.content = content;
         this.timeline = timeline;
-        this.evaluate = evaluate;
     }
 
-    public Comment(long idPost, String nameuser, String content, LocalDateTime timeline, long evaluate,
+    public Comment(long idPost, String nameuser, String content, LocalDateTime timeline, 
             Long idCmtParent) {
         super();
         this.idPost = idPost;
         this.nameuser = nameuser;
         this.content = content;
         this.timeline = timeline;
-        this.evaluate = evaluate;
         this.idCmtParent = idCmtParent;
     }
 
@@ -76,13 +73,6 @@ public class Comment {
         this.timeline = timeline;
     }
 
-    public long getEvaluate() {
-        return evaluate;
-    }
-
-    public void setEvaluate(long evaluate) {
-        this.evaluate = evaluate;
-    }
 
     public Long getIdCmtParent() {
         return idCmtParent;
@@ -92,10 +82,11 @@ public class Comment {
         this.idCmtParent = idCmtParent;
     }
 
-    @Override
-    public String toString() {
-        return "Comment [idCmt=" + idCmt + ", idPost=" + idPost + ", nameuser=" + nameuser + ", content=" + content
-                + ", timeline=" + timeline + ", evaluate=" + evaluate + ", idCmtParent=" + idCmtParent + "]";
-    }
+	@Override
+	public String toString() {
+		return "Comment [idCmt=" + idCmt + ", idPost=" + idPost + ", nameuser=" + nameuser + ", content=" + content
+				+ ", timeline=" + timeline + ", idCmtParent=" + idCmtParent + "]";
+	}
+
 
 }
